@@ -6,11 +6,7 @@ defmodule Message do
   # end
 
   def broadcast(message) do
-    IO.inspect(message, label: "Broadcast message")
-
     users_to_broadcast = RoomStore.get_room_users(message["room"])
-    IO.inspect(users_to_broadcast, label: "Broadcast to users")
-
     serialized_message = Jason.encode!(message)
 
     Registry.Dialogg

@@ -15,7 +15,6 @@ defmodule Dialogg.SocketHandler do
 
   # websocket_init: Called once the connection has been upgraded to Websocket.
   def websocket_init(state) do
-    IO.inspect(state)
     Registry.Dialogg |> Registry.register("room_broadcast", %{user: state.user})
 
     str_pid = to_string(:erlang.pid_to_list(self()))
