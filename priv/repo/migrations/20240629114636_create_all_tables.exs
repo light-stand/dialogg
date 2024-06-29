@@ -3,12 +3,12 @@ defmodule Dialogg.Repo.Migrations.CreateAllTables do
 
   def change do
     create table(:users, primary_key: false) do
-      add :id, :string, primary_key: true, size: 500
+      add :id, :string, primary_key: true, size: 128, default: fragment("gen_random_uuid()")
       add :created_at, :naive_datetime, default: fragment("CURRENT_TIMESTAMP")
     end
 
     create table(:rooms, primary_key: false) do
-      add :id, :string, primary_key: true, size: 500
+      add :id, :string, primary_key: true, size: 128, default: fragment("gen_random_uuid()")
       add :created_at, :naive_datetime, default: fragment("CURRENT_TIMESTAMP")
     end
 
@@ -22,7 +22,7 @@ defmodule Dialogg.Repo.Migrations.CreateAllTables do
     create index(:user_rooms, [:room_id])
 
     create table(:messages, primary_key: false) do
-      add :id, :string, primary_key: true, size: 500
+      add :id, :string, primary_key: true, size: 128, default: fragment("gen_random_uuid()")
       add :user_id, references(:users, type: :string, on_delete: :delete_all), null: false
       add :room_id, references(:rooms, type: :string, on_delete: :delete_all), null: false
       add :message_text, :text, null: false
