@@ -1,5 +1,5 @@
 defmodule Dialogg.Message do
-  use Ecto.Schema
+  use Dialogg.Schema
   import Ecto.Changeset
 
   ### Message Schema

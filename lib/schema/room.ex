@@ -1,5 +1,5 @@
 defmodule Dialogg.Room do
-  use Ecto.Schema
+  use Dialogg.Schema
   import Ecto.Changeset
 
   ### Room Schema

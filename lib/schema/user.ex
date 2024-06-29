@@ -1,5 +1,5 @@
 defmodule Dialogg.User do
-  use Ecto.Schema
+  use Dialogg.Schema
   import Ecto.Changeset
 
   ### User Schema
