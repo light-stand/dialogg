@@ -5,7 +5,7 @@ defmodule Dialogg do
     IO.puts("=== Starting Dialogg ===")
     children = [
       {RoomStore, RoomStore.initial_values()},
-      # %{id: Scheduler, start: {Scheduler, :start, [5000]}},
+      Dialogg.Repo,
       Plug.Cowboy.child_spec(
         scheme: :http,
         plug: Dialogg.Router,
@@ -25,7 +25,7 @@ defmodule Dialogg do
     [
       {:_,
        [
-         {"/ws/[...]", Dialogg.SocketHandler, []}
+         {"/ws/:token", Dialogg.SocketHandler, []}
        ]}
     ]
   end

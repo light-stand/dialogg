@@ -14,21 +14,13 @@ defmodule RoomStore do
   use Agent
 
   def initial_values() do
-    IO.puts("RoomStore.initial_values")
-    users_by_room = %{
-      ezenit: ["pedro", "gaston"],
-      lightstand: ["david", "pedro", "gaston"],
-      family: ["anderson", "pedro"]
-    }
-
     %{
-      users_by_room: users_by_room,
-      rooms_by_user: transform_rooms_to_users(users_by_room)
+      users_by_room: %{},
+      rooms_by_user: %{},
     }
   end
 
   def start_link(rooms) do
-    IO.puts("RoomStore.start_link, length(quotes): #{Kernel.map_size(rooms)}")
     Agent.start_link(fn -> rooms end, name: __MODULE__)
   end
 
@@ -50,11 +42,53 @@ defmodule RoomStore do
     values
   end
 
-  def transform_rooms_to_users(rooms) do
-    Enum.reduce(rooms, %{}, fn {room, users}, acc ->
-      Enum.reduce(users, acc, fn user, acc_inner ->
-        Map.update(acc_inner, user, [room], &[room | &1])
+  def register_user(ws_state) do
+    IO.inspect(ws_state, label: "WS_STATE")
+    Agent.update(__MODULE__, fn state ->
+      rooms_by_user = Map.put(state.rooms_by_user, ws_state.user, ws_state.rooms)
+      users_by_room = Enum.reduce(ws_state.rooms, state.users_by_room, fn room, acc ->
+        room_atom = String.to_atom(room)
+        if Map.has_key?(acc, room_atom) do
+          Map.update!(acc, room_atom, &[ws_state.user | &1])
+        else
+          Map.put(acc, room_atom, [ws_state.user])
+        end
       end)
+
+      IO.inspect(rooms_by_user, label: "rooms_by_user")
+      IO.inspect(users_by_room, label: "users_by_room")
+
+      %{
+        rooms_by_user: rooms_by_user,
+        users_by_room: users_by_room
+      }
+    end)
+  end
+
+  def unregister_user(ws_state) do
+    Agent.update(__MODULE__, fn state ->
+      rooms_by_user = Map.delete(state.rooms_by_user, ws_state.user)
+      users_by_room = Enum.reduce(ws_state.rooms, state.users_by_room, fn room, acc ->
+        room_atom = String.to_atom(room)
+        if Map.has_key?(acc, room_atom) do
+          updated_room_users = List.delete(acc[room_atom], ws_state.user)
+          if updated_room_users != [] do
+            Map.put(acc, room_atom, updated_room_users)
+          else
+            Map.delete(acc, room_atom)
+          end
+        else
+          acc
+        end
+      end)
+
+      IO.inspect(rooms_by_user, label: "rooms_by_user")
+      IO.inspect(users_by_room, label: "users_by_room")
+
+      %{
+        rooms_by_user: rooms_by_user,
+        users_by_room: users_by_room
+      }
     end)
   end
 end

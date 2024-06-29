@@ -5,10 +5,10 @@ defmodule Dialogg.SocketHandler do
   # Not run in the same process as the Websocket callbacks.
   @spec init(any(), any()) :: {:cowboy_websocket, any(), nil, %{idle_timeout: :infinity}}
   def init(req, _state) do
-    user = String.replace(:cowboy_req.path(req), "/ws/", "")
+    user = load_user_from_request(req)
     state = %{
-      rooms: RoomStore.get_user_rooms(user),
-      user: user
+      rooms: user.rooms,
+      user: user.id
     }
     {:cowboy_websocket, req, state, %{idle_timeout: :infinity}}
   end
@@ -16,6 +16,7 @@ defmodule Dialogg.SocketHandler do
   # websocket_init: Called once the connection has been upgraded to Websocket.
   def websocket_init(state) do
     Registry.Dialogg |> Registry.register("room_broadcast", %{user: state.user})
+    RoomStore.register_user(state)
 
     str_pid = to_string(:erlang.pid_to_list(self()))
     IO.puts("websocket_init: #{str_pid}")
@@ -38,5 +39,28 @@ defmodule Dialogg.SocketHandler do
   # Handle process recieving messages from broadcast.
   def websocket_info({:broadcast, message}, state) do
     {:reply, {:text, message}, state}
+  end
+
+  def terminate(_, _, state) do
+    RoomStore.unregister_user(state)
+    :ok
+  end
+
+  def load_user_from_request(req) do
+    require Ecto.Query
+    token = String.replace(:cowboy_req.path(req), "/ws/", "")
+    {:ok, claims} = Dialogg.TokenHandler.decode_token(token)
+    user_id = claims["sub"]
+
+    rooms = Dialogg.UserRoom
+    |> Ecto.Query.where([r], r.user_id == ^user_id)
+    |> Ecto.Query.select([r], {r.room_id})
+    |> Dialogg.Repo.all
+    |> Enum.map(fn {elem} -> elem end)
+
+    %{
+      id: user_id,
+      rooms: rooms
+    }
   end
 end
