@@ -1,4 +1,5 @@
 defmodule Message do
+  alias Dialogg.Mnesia
   # def start(interval) do
   #   IO.inspect(self(), label: "Scheduler Start")
   #   :timer.apply_interval(interval, __MODULE__, :send_quotes, [])
@@ -6,7 +7,7 @@ defmodule Message do
   # end
 
   def broadcast(message) do
-    users_to_broadcast = RoomStore.get_room_users(message["room"])
+    users_to_broadcast = Mnesia.get_room_users(message["room"])
     serialized_message = Jason.encode!(message)
 
     Registry.Dialogg

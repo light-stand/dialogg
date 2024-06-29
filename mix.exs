@@ -15,7 +15,7 @@ defmodule Dialogg.MixProject do
   def application do
     [
       mod: {Dialogg, []},
-      extra_applications: [:logger]
+      extra_applications: [:logger, :mnesia]
     ]
   end
 

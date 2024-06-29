@@ -1,10 +1,12 @@
 defmodule Dialogg do
+  alias Dialogg.Mnesia
   use Application
 
   def start(_type, _args) do
     IO.puts("=== Starting Dialogg ===")
+
+    :ok = Mnesia.setup()
     children = [
-      {RoomStore, RoomStore.initial_values()},
       Dialogg.Repo,
       Plug.Cowboy.child_spec(
         scheme: :http,

@@ -1,9 +1,9 @@
 defmodule Dialogg.SocketHandler do
+  alias Dialogg.Mnesia
   @behaviour :cowboy_websocket
   require Logger
 
   # Not run in the same process as the Websocket callbacks.
-  @spec init(any(), any()) :: {:cowboy_websocket, any(), nil, %{idle_timeout: :infinity}}
   def init(req, _state) do
     user = load_user_from_request(req)
     state = %{
@@ -14,15 +14,17 @@ defmodule Dialogg.SocketHandler do
   end
 
   # websocket_init: Called once the connection has been upgraded to Websocket.
+  @spec websocket_init(any()) :: {:reply, {:text, binary()}, any()}
   def websocket_init(state) do
     Registry.Dialogg |> Registry.register("room_broadcast", %{user: state.user})
-    RoomStore.register_user(state)
+    Mnesia.register_user(state)
+    :mnesia.dirty_all_keys(:user_rooms) |> IO.inspect(label: "Mnesia Keys")
 
     str_pid = to_string(:erlang.pid_to_list(self()))
     IO.puts("websocket_init: #{str_pid}")
 
     stime = String.slice(Time.to_iso8601(Time.utc_now()), 0, 8)
-    {:ok, json} = Jason.encode(%{time: stime, quotes: RoomStore.values()})
+    {:ok, json} = Jason.encode(%{time: stime})
     {:reply, {:text, json}, state}
   end
 
@@ -42,7 +44,7 @@ defmodule Dialogg.SocketHandler do
   end
 
   def terminate(_, _, state) do
-    RoomStore.unregister_user(state)
+    Mnesia.unregister_user(state)
     :ok
   end
 
