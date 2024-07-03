@@ -17,4 +17,8 @@ defmodule Dialogg.TokenHandler do
     signer = Dialogg.Token.signer()
     Dialogg.Token.verify_and_validate(token, signer)
   end
+  def encode_token(user_id) do
+    signer = Dialogg.Token.signer()
+    Dialogg.Token.generate_and_sign(%{"sub" => user_id}, signer)
+  end
 end

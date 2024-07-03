@@ -22,12 +22,13 @@ defmodule Dialogg.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:cowboy, "~> 2.4"},
-      {:plug_cowboy, "~> 2.0"},
+      {:bandit, "~> 1.0"},
       {:jason, "~> 1.3"},
       {:joken, "~> 2.6"},
       {:ecto_sql, "~> 3.0"},
-      {:postgrex, ">= 0.0.0"}
+      {:postgrex, ">= 0.0.0"},
+      {:websockex, "~> 0.4.2"},
+      {:websock_adapter, "~> 0.5"}
     ]
   end
 end

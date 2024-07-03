@@ -8,11 +8,7 @@ defmodule Dialogg do
     :ok = Mnesia.setup()
     children = [
       Dialogg.Repo,
-      Plug.Cowboy.child_spec(
-        scheme: :http,
-        plug: Dialogg.Router,
-        options: [dispatch: dispatch(), port: 5000]
-      ),
+      {Bandit, plug: Dialogg.Router, scheme: :http, port: 4000},
       Registry.child_spec(
         keys: :duplicate,
         name: Registry.Dialogg
